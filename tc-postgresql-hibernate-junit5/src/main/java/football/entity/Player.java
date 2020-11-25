@@ -62,4 +62,13 @@ public class Player implements Serializable {
         this.team = team;
     }
 
+    @Override
+    public String toString() {
+        return "Player{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", team=" + team +
+                '}';
+    }
 }
