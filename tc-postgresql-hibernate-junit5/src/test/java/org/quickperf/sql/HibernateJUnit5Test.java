@@ -58,39 +58,67 @@ public class HibernateJUnit5Test {
     @BeforeEach
     public void before() throws SQLException {
 
-        PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
+        int teamNumber = 10_000;
+        int playerNumber = 10_000;
+        int batchSize = 20;
 
-        int teamNumber = 10;
-        int playerNumber = 10;
+        insertTeams(teamNumber, batchSize);
 
-        for (int i = 1; i <= teamNumber; i++) {
-            teamStatement.setLong(1, i);
-            teamStatement.setString(2, "TEAM " + i);
-            teamStatement.executeUpdate();
-        }
-
-        PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
-                + "(?, ?, ?)");
-
-        for (int i = 1; i <= playerNumber; i++) {
-            playerStatement.setLong(1, i);
-            playerStatement.setString(2, "FIRST NAME " + i);
-            playerStatement.setString(3, "TEAM "+ i);
-            playerStatement.executeUpdate();
-        }
+        insertPlayers(playerNumber, batchSize);
 
     }
 
+    private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
+        PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
+                + "(?, ?, ?)");
+
+        int playerCount = 0;
+        for (int i = 1; i <= playerNumber; i++) {
+            playerCount++;
+            playerStatement.setLong(1, i);
+            playerStatement.setString(2, "FIRST NAME " + i);
+            playerStatement.setString(3, "TEAM "+ i);
+
+            playerStatement.addBatch();
+
+            if(playerCount % batchSize == 0) {
+                playerStatement.executeBatch();
+            }
+        }
+        playerStatement.executeBatch();
+    }
+
+    private void insertTeams(int teamNumber, int batchSize) throws SQLException {
+        PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
+        int teamCount = 0;
+
+        for (int i = 1; i <= teamNumber; i++) {
+
+            teamStatement.setLong(1, i);
+            teamStatement.setString(2, "TEAM " + i);
+            teamStatement.addBatch();
+            teamCount++;
+            if (teamCount % batchSize == 0) {
+                teamStatement.executeBatch();
+            }
+        }
+
+        teamStatement.executeBatch();
+    }
+
     //@ExpectSelect(3)
-    //@DisplaySqlOfTestMethodBody
-    @DisplaySql
+    @DisplaySqlOfTestMethodBody
+    //@DisplaySql
     @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 30)
     @Test
-    public void should_find_all_players() {
+    public void execute_long_query() throws SQLException {
 
-            final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
+        PreparedStatement statement = connection.prepareStatement("SELECT * FROM PLAYER WHERE firstName LIKE '%9000'");
+        statement.execute();
 
-            final List<Player> players = fromPlayer.getResultList();
+        //final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
+
+        //final List<Player> players = fromPlayer.getResultList();
 
             /*
         System.out.println("\n--- TESTING CONSOLE ---\n");
