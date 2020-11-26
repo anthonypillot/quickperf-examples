@@ -16,10 +16,14 @@ package org.quickperf.sql;
 import football.dto.PlayerWithTeamName;
 import football.entity.Player;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
+import org.hibernate.internal.SessionImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.annotation.DisableGlobalAnnotations;
 import org.quickperf.junit5.QuickPerfTest;
+import org.quickperf.sql.annotation.DisplaySql;
 import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
+import org.quickperf.sql.annotation.ExpectMaxQueryExecutionTime;
 import org.quickperf.sql.annotation.ExpectSelect;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -29,6 +33,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,9 +53,38 @@ public class HibernateJUnit5Test {
             .withDatabaseName("testcontainers")
             .withUsername("nes")
             .withPassword("quick");
+    private Connection connection;
 
-    @ExpectSelect(3)
-    @DisplaySqlOfTestMethodBody
+    @BeforeEach
+    public void before() throws SQLException {
+
+        PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
+
+        int teamNumber = 10;
+        int playerNumber = 10;
+
+        for (int i = 1; i <= teamNumber; i++) {
+            teamStatement.setLong(1, i);
+            teamStatement.setString(2, "TEAM " + i);
+            teamStatement.executeUpdate();
+        }
+
+        PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
+                + "(?, ?, ?)");
+
+        for (int i = 1; i <= playerNumber; i++) {
+            playerStatement.setLong(1, i);
+            playerStatement.setString(2, "FIRST NAME " + i);
+            playerStatement.setString(3, "TEAM "+ i);
+            playerStatement.executeUpdate();
+        }
+
+    }
+
+    //@ExpectSelect(3)
+    //@DisplaySqlOfTestMethodBody
+    @DisplaySql
+    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 30)
     @Test
     public void should_find_all_players() {
 
@@ -56,12 +92,15 @@ public class HibernateJUnit5Test {
 
             final List<Player> players = fromPlayer.getResultList();
 
+            /*
         System.out.println("\n--- TESTING CONSOLE ---\n");
         System.out.println("Each players in the list:");
         players.forEach((result) -> {
             System.out.println(result);
         });
             assertThat(players).hasSize(4);
+
+             */
     }
 
     @Test
@@ -94,6 +133,12 @@ public class HibernateJUnit5Test {
                 .buildProxy(dataSource);
 
         entityManager = anHibernateEntityManager(proxyDataSource);
+
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
+
+        connection = session.connection();
+
+
     }
 
 }
