@@ -19,6 +19,7 @@ import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.junit.jupiter.api.Test;
 import org.quickperf.annotation.DisableGlobalAnnotations;
 import org.quickperf.junit5.QuickPerfTest;
+import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
 import org.quickperf.sql.annotation.ExpectSelect;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -69,10 +70,11 @@ public class HibernateJUnit5Test {
 
     If you run the test with this modification, it will be green!
     */
-    @ExpectSelect(1)
+    @ExpectSelect(3)
     @DisableGlobalAnnotations // Global annotations are explained with the
     // second test method. Global annotations are
     // disabled here to explain one thing at a time.
+    @DisplaySqlOfTestMethodBody
     @Test
     public void should_find_all_players() {
 
@@ -80,8 +82,12 @@ public class HibernateJUnit5Test {
 
             final List<Player> players = fromPlayer.getResultList();
 
-            assertThat(players).hasSize(2);
-
+        System.out.println("\n--- TESTING CONSOLE ---\n");
+        System.out.println("Each players in the list:");
+        players.forEach((result) -> {
+            System.out.println(result);
+        });
+            assertThat(players).hasSize(4);
     }
 
     // In the previous example, the outcome of the N+1 select was to have additional
@@ -132,21 +138,22 @@ public class HibernateJUnit5Test {
      */
     // @FunctionalIteration //Uncomment this line to temporarily disable QuickPerf
     // features
-    @Test
-    public void should_find_all_players_with_their_team_name() {
 
-            final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
-
-            final List<Player> players = fromPlayer.getResultList();
-
-            final List<PlayerWithTeamName> playersWithTeamName = players.stream()
-                            .map(player -> new PlayerWithTeamName(player.getFirstName(), player.getLastName(),
-                                            player.getTeam().getName()))
-                            .collect(Collectors.toList());
-
-            assertThat(playersWithTeamName).hasSize(2);
-
-    }
+//    @Test
+//    public void should_find_all_players_with_their_team_name() {
+//
+//            final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
+//
+//            final List<Player> players = fromPlayer.getResultList();
+//
+//            final List<PlayerWithTeamName> playersWithTeamName = players.stream()
+//                            .map(player -> new PlayerWithTeamName(player.getFirstName(), player.getLastName(),
+//                                            player.getTeam().getName()))
+//                            .collect(Collectors.toList());
+//
+//            assertThat(playersWithTeamName).hasSize(2);
+//
+//    }
 
     // -------------------------------------------------------------------------------------
 
