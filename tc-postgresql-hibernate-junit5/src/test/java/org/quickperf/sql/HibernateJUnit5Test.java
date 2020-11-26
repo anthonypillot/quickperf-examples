@@ -21,10 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.annotation.DisableGlobalAnnotations;
 import org.quickperf.junit5.QuickPerfTest;
-import org.quickperf.sql.annotation.DisplaySql;
-import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
-import org.quickperf.sql.annotation.ExpectMaxQueryExecutionTime;
-import org.quickperf.sql.annotation.ExpectSelect;
+import org.quickperf.sql.annotation.*;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -36,6 +33,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,13 +56,11 @@ public class HibernateJUnit5Test {
     @BeforeEach
     public void before() throws SQLException {
 
-        int teamNumber = 10_000;
-        int playerNumber = 10_000;
         int batchSize = 20;
 
-        insertTeams(teamNumber, batchSize);
+        insertTeams(200_000, batchSize);
 
-        insertPlayers(playerNumber, batchSize);
+        insertPlayers(200_000, batchSize);
 
     }
 
@@ -73,10 +69,22 @@ public class HibernateJUnit5Test {
                 + "(?, ?, ?)");
 
         int playerCount = 0;
+
+        List<String> firstNames = Arrays.asList("", "", "");
+
+        int nameIndex = 0;
+
         for (int i = 1; i <= playerNumber; i++) {
             playerCount++;
             playerStatement.setLong(1, i);
-            playerStatement.setString(2, "FIRST NAME " + i);
+            playerStatement.setString(2, firstNames.get(nameIndex) + " " + i);
+
+            nameIndex++;
+
+            if(nameIndex > firstNames.size()) {
+                nameIndex = 0;
+            }
+
             playerStatement.setString(3, "TEAM "+ i);
 
             playerStatement.addBatch();
@@ -110,10 +118,14 @@ public class HibernateJUnit5Test {
     @DisplaySqlOfTestMethodBody
     //@DisplaySql
     @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 30)
+    //@DisableLikeWithLeadingWildcard
     @Test
     public void execute_long_query() throws SQLException {
 
-        PreparedStatement statement = connection.prepareStatement("SELECT * FROM PLAYER WHERE firstName LIKE '%9000'");
+        //String sqlQuery = "SELECT * FROM PLAYER WHERE firstName LIKE '%95000'";
+        String sqlQuery = "SELECT * FROM PLAYER WHERE firstName = 'FIRST NAME 95000'";
+
+        PreparedStatement statement = connection.prepareStatement(sqlQuery);
         statement.execute();
 
         //final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
