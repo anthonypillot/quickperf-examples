@@ -152,12 +152,26 @@ public class QueryExecutionTimeTest {
 
     }
 
+
     @DisplaySqlOfTestMethodBody
     @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
     //@ProfileJvm
     //@DisableLikeWithLeadingWildcard
     @Test
     void execute_long_query_with_like() throws SQLException {
+
+        String sqlQuery = "SELECT * FROM PLAYER WHERE firstName LIKE 'FIRST NAME%ANN'";
+
+        PreparedStatement statement = connection.prepareStatement(sqlQuery);
+        statement.execute();
+    }
+
+    @DisplaySqlOfTestMethodBody
+    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
+    //@ProfileJvm
+    //@DisableLikeWithLeadingWildcard
+    @Test
+    void execute_long_query_with_like_having_leading_wildcard() throws SQLException {
 
         String sqlQuery = "SELECT * FROM PLAYER WHERE firstName LIKE '%ANN'";
 
