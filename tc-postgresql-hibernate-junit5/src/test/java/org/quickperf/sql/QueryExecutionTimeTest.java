@@ -130,7 +130,11 @@ public class QueryExecutionTimeTest {
         String sqlQuery = "SELECT * FROM PLAYER WHERE firstName = 'FIRST NAME GRIEZMANN'";
 
         PreparedStatement statement = connection.prepareStatement(sqlQuery);
-        statement.execute();
+
+        for (int i = 0; i < 10; i++) {
+            statement.execute();
+        }
+
     }
 
     @DisplaySqlOfTestMethodBody
