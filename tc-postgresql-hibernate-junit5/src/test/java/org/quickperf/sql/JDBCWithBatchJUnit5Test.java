@@ -123,17 +123,6 @@ public class JDBCWithBatchJUnit5Test {
 
     @DisplaySqlOfTestMethodBody
     @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
-    @Test
-    void execute_sql_select() throws SQLException {
-
-        String sqlQuery = "SELECT * FROM PLAYER";
-
-        PreparedStatement statement = connection.prepareStatement(sqlQuery);
-        statement.execute();
-    }
-
-    @DisplaySqlOfTestMethodBody
-    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
     //@DisableLikeWithLeadingWildcard
     @Test
     void execute_long_query_with_equal() throws SQLException {
