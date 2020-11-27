@@ -50,7 +50,7 @@ public class QueryExecutionTimeTest {
     @BeforeEach
     public void before() throws SQLException {
 
-        int batchSize = 1000;
+        int batchSize = 50;
 
         insertTeams(100_000, batchSize);
         insertPlayers(100_000, batchSize);
