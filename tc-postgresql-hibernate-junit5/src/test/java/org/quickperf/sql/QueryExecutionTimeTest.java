@@ -18,6 +18,7 @@ import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.junit5.QuickPerfTest;
+import org.quickperf.jvm.jfr.annotation.ProfileJvm;
 import org.quickperf.sql.annotation.*;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -122,6 +123,20 @@ public class QueryExecutionTimeTest {
     }
 
     @DisplaySqlOfTestMethodBody
+    @Test
+    void execute_always_true_query() throws SQLException {
+
+        String sqlQuery = "SELECT * FROM PLAYER WHERE 1 != 1";
+
+        PreparedStatement statement = connection.prepareStatement(sqlQuery);
+
+        for (int i = 0; i < 10; i++) {
+            statement.execute();
+        }
+
+    }
+
+    @DisplaySqlOfTestMethodBody
     @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
     //@DisableLikeWithLeadingWildcard
     @Test
@@ -139,6 +154,7 @@ public class QueryExecutionTimeTest {
 
     @DisplaySqlOfTestMethodBody
     @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
+    @ProfileJvm
     //@DisableLikeWithLeadingWildcard
     @Test
     void execute_long_query_with_like() throws SQLException {
