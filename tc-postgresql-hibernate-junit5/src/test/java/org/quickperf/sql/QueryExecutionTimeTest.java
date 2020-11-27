@@ -154,7 +154,7 @@ public class QueryExecutionTimeTest {
 
     @DisplaySqlOfTestMethodBody
     @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
-    @ProfileJvm
+    //@ProfileJvm
     //@DisableLikeWithLeadingWildcard
     @Test
     void execute_long_query_with_like() throws SQLException {
