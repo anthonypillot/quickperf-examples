@@ -13,13 +13,10 @@
 
 package org.quickperf.sql;
 
-import football.dto.PlayerWithTeamName;
-import football.entity.Player;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.quickperf.annotation.DisableGlobalAnnotations;
 import org.quickperf.junit5.QuickPerfTest;
 import org.quickperf.sql.annotation.*;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
@@ -28,16 +25,13 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.quickperf.sql.config.HibernateEntityManagerBuilder.anHibernateEntityManager;
 import static org.quickperf.sql.config.TestDataSourceBuilder.aDataSource;
 
@@ -48,20 +42,18 @@ public class HibernateJUnit5Test {
     @Container
     static final PostgreSQLContainer db =
             new PostgreSQLContainer<>("postgres:12.3")
-            .withDatabaseName("testcontainers")
-            .withUsername("nes")
-            .withPassword("quick");
+                    .withDatabaseName("testcontainers")
+                    .withUsername("nes")
+                    .withPassword("quick");
     private Connection connection;
 
     @BeforeEach
     public void before() throws SQLException {
 
-        int batchSize = 20;
+        int batchSize = 1000;
 
-        insertTeams(200_000, batchSize);
-
-        insertPlayers(200_000, batchSize);
-
+        insertTeams(100_000, batchSize);
+        insertPlayers(100_000, batchSize);
     }
 
     private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
@@ -70,26 +62,28 @@ public class HibernateJUnit5Test {
 
         int playerCount = 0;
 
-        List<String> firstNames = Arrays.asList("", "", "");
+        List<String> lastNames = Arrays.asList("POGBA", "GRIEZMANN", "GIROUD", "PAVARD", "MARTIAL", "KANTÉ", "MBAPPÉ",
+                "LLORIS", "RABIOT", "VARANE", "FEKIR", "DIGNE", "THAUVIN", "LEMAR", "TOLISSO", "HERNANDEZ", "COMAN",
+                "UPAMECANO", "MATUIDI", "AOUAR");
 
-        int nameIndex = 0;
+        int lastNameIndex = 0;
 
         for (int i = 1; i <= playerNumber; i++) {
             playerCount++;
             playerStatement.setLong(1, i);
-            playerStatement.setString(2, firstNames.get(nameIndex) + " " + i);
+            playerStatement.setString(2, "LAST NAME " + lastNames.get(lastNameIndex));
 
-            nameIndex++;
+            lastNameIndex++;
 
-            if(nameIndex > firstNames.size()) {
-                nameIndex = 0;
+            if (lastNameIndex > lastNames.size() - 1) {
+                lastNameIndex = 0;
             }
 
-            playerStatement.setString(3, "TEAM "+ i);
+            playerStatement.setString(3, "TEAM " + i);
 
             playerStatement.addBatch();
 
-            if(playerCount % batchSize == 0) {
+            if (playerCount % batchSize == 0) {
                 playerStatement.executeBatch();
             }
         }
@@ -100,11 +94,24 @@ public class HibernateJUnit5Test {
         PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
         int teamCount = 0;
 
+        List<String> teamNames = Arrays.asList("FRANCE", "GERMANY", "GREECE", "AUSTRIA", "FINLAND", "PORTUGAL", "SPAIN",
+                "SWEDEN", "SLOVAKIA", "LUXEMBOURG");
+
+        int teamNameIndex = 0;
+
         for (int i = 1; i <= teamNumber; i++) {
 
             teamStatement.setLong(1, i);
-            teamStatement.setString(2, "TEAM " + i);
+            teamStatement.setString(2, "TEAM " + teamNames.get(teamNameIndex));
+
+            teamNameIndex++;
+
+            if (teamNameIndex > teamNames.size() - 1) {
+                teamNameIndex = 0;
+            }
+
             teamStatement.addBatch();
+
             teamCount++;
             if (teamCount % batchSize == 0) {
                 teamStatement.executeBatch();
@@ -114,35 +121,42 @@ public class HibernateJUnit5Test {
         teamStatement.executeBatch();
     }
 
-    //@ExpectSelect(3)
     @DisplaySqlOfTestMethodBody
-    //@DisplaySql
-    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 30)
-    //@DisableLikeWithLeadingWildcard
+    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
     @Test
-    public void execute_long_query() throws SQLException {
+    void execute_sql_select() throws SQLException {
 
-        //String sqlQuery = "SELECT * FROM PLAYER WHERE firstName LIKE '%95000'";
-        String sqlQuery = "SELECT * FROM PLAYER WHERE firstName = 'FIRST NAME 95000'";
+        String sqlQuery = "SELECT * FROM PLAYER";
 
         PreparedStatement statement = connection.prepareStatement(sqlQuery);
         statement.execute();
-
-        //final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
-
-        //final List<Player> players = fromPlayer.getResultList();
-
-            /*
-        System.out.println("\n--- TESTING CONSOLE ---\n");
-        System.out.println("Each players in the list:");
-        players.forEach((result) -> {
-            System.out.println(result);
-        });
-            assertThat(players).hasSize(4);
-
-             */
     }
 
+    @DisplaySqlOfTestMethodBody
+    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
+    //@DisableLikeWithLeadingWildcard
+    @Test
+    void execute_long_query_with_equal() throws SQLException {
+
+        String sqlQuery = "SELECT * FROM PLAYER WHERE firstName = 'FIRST NAME GRIEZMANN'";
+
+        PreparedStatement statement = connection.prepareStatement(sqlQuery);
+        statement.execute();
+    }
+
+    @DisplaySqlOfTestMethodBody
+    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
+    //@DisableLikeWithLeadingWildcard
+    @Test
+    void execute_long_query_with_like() throws SQLException {
+
+        String sqlQuery = "SELECT * FROM PLAYER WHERE firstName LIKE '%ANN'";
+
+        PreparedStatement statement = connection.prepareStatement(sqlQuery);
+        statement.execute();
+    }
+
+/*
     @Test
     public void should_find_all_players_with_their_team_name() {
 
@@ -156,20 +170,21 @@ public class HibernateJUnit5Test {
                             .collect(Collectors.toList());
 
             assertThat(playersWithTeamName).hasSize(2);
-
     }
+ */
 
     // -------------------------------------------------------------------------------------
 
     private EntityManager entityManager;
-    {
-            //db.
-            final DataSource dataSource = aDataSource().build(db);
 
-            // A data source proxy is built to allow QuickPerf to intercept the SQL
-            // statements
-            final ProxyDataSource proxyDataSource = QuickPerfSqlDataSourceBuilder
-                            .aDataSourceBuilder()
+    {
+        //db.
+        final DataSource dataSource = aDataSource().build(db);
+
+        // A data source proxy is built to allow QuickPerf to intercept the SQL
+        // statements
+        final ProxyDataSource proxyDataSource = QuickPerfSqlDataSourceBuilder
+                .aDataSourceBuilder()
                 .buildProxy(dataSource);
 
         entityManager = anHibernateEntityManager(proxyDataSource);
