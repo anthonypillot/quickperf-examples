@@ -18,7 +18,8 @@ import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.junit5.QuickPerfTest;
-import org.quickperf.sql.annotation.*;
+import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
+import org.quickperf.sql.annotation.ExpectMaxQueryExecutionTime;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -37,7 +38,7 @@ import static org.quickperf.sql.config.TestDataSourceBuilder.aDataSource;
 
 @Testcontainers
 @QuickPerfTest
-public class JDBCWithBatchJUnit5Test {
+public class WithoutBatching {
 
     @Container
     static final PostgreSQLContainer db =
@@ -49,18 +50,13 @@ public class JDBCWithBatchJUnit5Test {
 
     @BeforeEach
     public void before() throws SQLException {
-
-        int batchSize = 1000;
-
-        insertTeams(100_000, batchSize);
-        insertPlayers(100_000, batchSize);
+        insertTeams(100_000);
+        insertPlayers(100_000);
     }
 
-    private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
+    private void insertPlayers(int playerNumber) throws SQLException {
         PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
                 + "(?, ?, ?)");
-
-        int playerCount = 0;
 
         List<String> lastNames = Arrays.asList("POGBA", "GRIEZMANN", "GIROUD", "PAVARD", "MARTIAL", "KANTÉ", "MBAPPÉ",
                 "LLORIS", "RABIOT", "VARANE", "FEKIR", "DIGNE", "THAUVIN", "LEMAR", "TOLISSO", "HERNANDEZ", "COMAN",
@@ -69,7 +65,6 @@ public class JDBCWithBatchJUnit5Test {
         int lastNameIndex = 0;
 
         for (int i = 1; i <= playerNumber; i++) {
-            playerCount++;
             playerStatement.setLong(1, i);
             playerStatement.setString(2, "LAST NAME " + lastNames.get(lastNameIndex));
 
@@ -81,18 +76,12 @@ public class JDBCWithBatchJUnit5Test {
 
             playerStatement.setString(3, "TEAM " + i);
 
-            playerStatement.addBatch();
-
-            if (playerCount % batchSize == 0) {
-                playerStatement.executeBatch();
-            }
+            playerStatement.execute();
         }
-        playerStatement.executeBatch();
     }
 
-    private void insertTeams(int teamNumber, int batchSize) throws SQLException {
+    private void insertTeams(int teamNumber) throws SQLException {
         PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
-        int teamCount = 0;
 
         List<String> teamNames = Arrays.asList("FRANCE", "GERMANY", "GREECE", "AUSTRIA", "FINLAND", "PORTUGAL", "SPAIN",
                 "SWEDEN", "SLOVAKIA", "LUXEMBOURG");
@@ -109,16 +98,8 @@ public class JDBCWithBatchJUnit5Test {
             if (teamNameIndex > teamNames.size() - 1) {
                 teamNameIndex = 0;
             }
-
-            teamStatement.addBatch();
-
-            teamCount++;
-            if (teamCount % batchSize == 0) {
-                teamStatement.executeBatch();
-            }
+            teamStatement.execute();
         }
-
-        teamStatement.executeBatch();
     }
 
     @DisplaySqlOfTestMethodBody
