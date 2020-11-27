@@ -37,7 +37,7 @@ import static org.quickperf.sql.config.TestDataSourceBuilder.aDataSource;
 
 @Testcontainers
 @QuickPerfTest
-public class HibernateJUnit5Test {
+public class JDBCWithBatchJUnit5Test {
 
     @Container
     static final PostgreSQLContainer db =
