@@ -17,7 +17,11 @@ import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.quickperf.annotation.ExpectMaxExecutionTime;
+import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
+import org.quickperf.jvm.annotations.MeasureHeapAllocation;
+import org.quickperf.jvm.jfr.annotation.ProfileJvm;
 import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
 import org.quickperf.sql.annotation.ExpectMaxQueryExecutionTime;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
@@ -38,7 +42,7 @@ import static org.quickperf.sql.config.TestDataSourceBuilder.aDataSource;
 
 @Testcontainers
 @QuickPerfTest
-public class WithoutBatching {
+public class Batching {
 
     @Container
     static final PostgreSQLContainer db =
@@ -102,16 +106,24 @@ public class WithoutBatching {
         }
     }
 
-    @DisplaySqlOfTestMethodBody
-    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
+
     //@DisableLikeWithLeadingWildcard
+    @MeasureExecutionTime
+    //@MeasureHeapAllocation
+    //@ProfileJvm
     @Test
-    void execute_long_query_with_equal() throws SQLException {
+    void execute_insert_without_batching() throws SQLException {
 
-        String sqlQuery = "SELECT * FROM PLAYER WHERE firstName = 'FIRST NAME GRIEZMANN'";
 
-        PreparedStatement statement = connection.prepareStatement(sqlQuery);
-        statement.execute();
+    }
+
+    @MeasureExecutionTime
+    //@MeasureHeapAllocation
+    //@ProfileJvm
+    @Test
+    void execute_insert_with_batching() throws SQLException {
+
+
     }
 
     @DisplaySqlOfTestMethodBody
