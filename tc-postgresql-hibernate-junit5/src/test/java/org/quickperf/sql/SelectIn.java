@@ -124,16 +124,6 @@ public class SelectIn {
         teamStatement.executeBatch();
     }
 
-    // Testing Scope
-    @MeasureExecutionTime
-    @Test
-    void should_find_all_players() {
-        String hql = "FROM Player";
-
-        Query query = entityManager.createQuery(hql, Player.class);
-        query.getResultList();
-    }
-
     @Test
     void should_find_all_players_with_select_in() {
 

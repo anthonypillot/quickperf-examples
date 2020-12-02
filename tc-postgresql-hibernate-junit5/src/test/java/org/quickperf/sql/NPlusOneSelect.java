@@ -3,9 +3,12 @@ package org.quickperf.sql;
 import football.entity.Player;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.hibernate.internal.SessionImpl;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
+import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
+import org.quickperf.sql.annotation.ExpectSelect;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -46,9 +49,13 @@ public class NPlusOneSelect {
     }
 
     @Test
-    void n_plus_one_select() {
+    @MeasureExecutionTime
+    //@ExpectSelect(1)
+    //@DisplaySqlOfTestMethodBody
+    public void n_plus_one_select() {
         String hql = "FROM Player";
         Query query = entityManager.createQuery(hql, Player.class);
+        query.getResultList();
     }
 
     private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
