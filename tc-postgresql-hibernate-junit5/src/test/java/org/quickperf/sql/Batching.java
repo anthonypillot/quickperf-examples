@@ -52,49 +52,19 @@ public class Batching {
     //@ProfileJvm
     @Test
     void execute_insert_without_batching_one_insert() throws SQLException {
+
         PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
                 + "(?, ?, ?)");
 
-        List<String> lastNames = Arrays.asList("POGBA", "GRIEZMANN", "GIROUD", "PAVARD", "MARTIAL", "KANTÉ", "MBAPPÉ",
-                "LLORIS", "RABIOT", "VARANE", "FEKIR", "DIGNE", "THAUVIN", "LEMAR", "TOLISSO", "HERNANDEZ", "COMAN",
-                "UPAMECANO", "MATUIDI", "AOUAR");
-
-        int lastNameIndex = 0;
-
-        for (int i = 1; i <= 1; i++) {
-            playerStatement.setLong(1, i);
-            playerStatement.setString(2, "LAST NAME " + lastNames.get(lastNameIndex));
-
-            lastNameIndex++;
-
-            if (lastNameIndex > lastNames.size() - 1) {
-                lastNameIndex = 0;
-            }
-
-            playerStatement.setString(3, "TEAM " + i);
-
-            playerStatement.execute();
-        }
+        playerStatement.setLong(1, 1);
+        playerStatement.setString(2, "LAST NAME " + "GRIEZMANN");
+        playerStatement.setString(3, "TEAM " + 1);
+        playerStatement.execute();
 
         PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
-
-        List<String> teamNames = Arrays.asList("FRANCE", "GERMANY", "GREECE", "AUSTRIA", "FINLAND", "PORTUGAL", "SPAIN",
-                "SWEDEN", "SLOVAKIA", "LUXEMBOURG");
-
-        int teamNameIndex = 0;
-
-        for (int i = 1; i <= 1; i++) {
-
-            teamStatement.setLong(1, i);
-            teamStatement.setString(2, "TEAM " + teamNames.get(teamNameIndex));
-
-            teamNameIndex++;
-
-            if (teamNameIndex > teamNames.size() - 1) {
-                teamNameIndex = 0;
-            }
-            teamStatement.execute();
-        }
+        teamStatement.setLong(1, 1);
+        teamStatement.setString(2, "TEAM " + "FRANCE");
+        teamStatement.execute();
     }
 
     @MeasureExecutionTime
