@@ -1,24 +1,10 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- *
- * Copyright 2020-2020 the original author or authors.
- */
-
 package org.quickperf.sql;
 
 import football.entity.Player;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.hibernate.internal.SessionImpl;
+import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -28,6 +14,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -39,7 +26,7 @@ import static org.quickperf.sql.config.TestDataSourceBuilder.aDataSource;
 
 @Testcontainers
 @QuickPerfTest
-public class NplusOneSelect {
+public class NPlusOneSelect {
 
     @Container
     static final PostgreSQLContainer db =
@@ -56,6 +43,12 @@ public class NplusOneSelect {
 
         insertTeams(1000, batchSize);
         insertPlayers(1000, batchSize);
+    }
+
+    @Test
+    void n_plus_one_select() {
+        String hql = "FROM Player";
+        Query query = entityManager.createQuery(hql, Player.class);
     }
 
     private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
@@ -122,38 +115,6 @@ public class NplusOneSelect {
         teamStatement.executeBatch();
     }
 
-    //    @ExpectSelect()
-    @MeasureExecutionTime
-    @Test
-    void should_find_all_players() {
-        String hql = "FROM Player";
-
-        Query query = entityManager.createQuery(hql, Player.class);
-
-        System.out.println(query.getResultList());
-    }
-
-    //    @ExpectSelect()
-    @MeasureExecutionTime
-    @Test
-    void should_find_all_players_with_select_in() {
-
-        List<String> teamNames = Arrays.asList("FRANCE", "GERMANY");
-
-        String hql = "FROM Player WHERE team IN :teamNames";
-
-        Query query = entityManager.createQuery(hql, Player.class);
-        query.setParameter("team", teamNames);
-
-        System.out.println(query.getResultList());
-
-//        List<Player> resultList = query.getResultList();
-//
-//        System.out.println(resultList);
-    }
-
-    // -------------------------------------------------------------------------------------
-
     private EntityManager entityManager;
 
     {
@@ -172,4 +133,5 @@ public class NplusOneSelect {
 
         connection = session.connection();
     }
+
 }
