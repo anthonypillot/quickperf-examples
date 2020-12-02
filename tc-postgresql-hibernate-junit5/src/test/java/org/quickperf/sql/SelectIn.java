@@ -19,7 +19,6 @@ import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.junit5.QuickPerfTest;
-import org.quickperf.jvm.heap.HeapDumper;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -135,8 +134,8 @@ public class SelectIn {
 
         query.getResultList();
 
-        // Trigger Full GC and dump the heap
-        HeapDumper.dumpHeap("large-in.hprof");
+        // TODO Trigger Full GC and dump the heap
+        // HeapDumper.dumpHeap("large-in.hprof");
     }
 
     @Test
@@ -144,21 +143,21 @@ public class SelectIn {
 
         List<Long> idsList = new ArrayList<>();
 
-        for (long i = 0; i < 100_000; i++) {
+        for (long i = 0; i < 32768; i++) {
             idsList.add(i);
         }
 
         String parameter = "playerIds";
 
-        String hql = "FROM Player WHERE id in (:" + parameter + ")";
+        String hql = "FROM Player WHERE id IN (:" + parameter + ")";
 
         Query query = entityManager.createQuery(hql, Player.class);
         query.setParameter(parameter, idsList);
 
         query.getResultList();
 
-        // Trigger Full GC and dump the heap
-        HeapDumper.dumpHeap("large-in.hprof");
+        // TODO Trigger Full GC and dump the heap
+        // HeapDumper.dumpHeap("large-in.hprof");
     }
 
     // -------------------------------------------------------------------------------------
