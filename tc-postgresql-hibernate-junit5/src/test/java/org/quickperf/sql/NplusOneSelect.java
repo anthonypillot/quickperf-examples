@@ -13,28 +13,27 @@
 
 package org.quickperf.sql;
 
-import football.dto.PlayerWithTeamName;
 import football.entity.Player;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
+import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.quickperf.annotation.DisableGlobalAnnotations;
 import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
-import org.quickperf.sql.annotation.ExpectSelect;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
+import javax.persistence.Query;
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.quickperf.sql.config.HibernateEntityManagerBuilder.anHibernateEntityManager;
 import static org.quickperf.sql.config.TestDataSourceBuilder.aDataSource;
 
@@ -48,46 +47,115 @@ public class NplusOneSelect {
                     .withDatabaseName("testcontainers")
                     .withUsername("nes")
                     .withPassword("quick");
+    private Connection connection;
 
-//    @BeforeEach
-//    public void before() throws SQLException {
-//        insertTeams(100_000);
-//        insertPlayers(100_000);
-//    }
+    @BeforeEach
+    public void before() throws SQLException {
 
-//    @ExpectSelect(1)
-    @MeasureExecutionTime
-    @DisableGlobalAnnotations // Global annotations are explained with the
-    // second test method. Global annotations are
-    // disabled here to explain one thing at a time.
-    @Test
-    public void should_find_all_players() {
+        int batchSize = 50;
 
-        final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
-
-        final List<Player> players = fromPlayer.getResultList();
-
-        assertThat(players).hasSize(2);
+        insertTeams(1000, batchSize);
+        insertPlayers(1000, batchSize);
     }
 
+    private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
+        PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
+                + "(?, ?, ?)");
+
+        int playerCount = 0;
+
+        List<String> lastNames = Arrays.asList("POGBA", "GRIEZMANN", "GIROUD", "PAVARD", "MARTIAL", "KANTÉ", "MBAPPÉ",
+                "LLORIS", "RABIOT", "VARANE", "FEKIR", "DIGNE", "THAUVIN", "LEMAR", "TOLISSO", "HERNANDEZ", "COMAN",
+                "UPAMECANO", "MATUIDI", "AOUAR");
+
+        int lastNameIndex = 0;
+
+        for (int i = 1; i <= playerNumber; i++) {
+            playerCount++;
+            playerStatement.setLong(1, i);
+            playerStatement.setString(2, "LAST NAME " + lastNames.get(lastNameIndex));
+
+            lastNameIndex++;
+
+            if (lastNameIndex > lastNames.size() - 1) {
+                lastNameIndex = 0;
+            }
+
+            playerStatement.setString(3, "TEAM " + i);
+
+            playerStatement.addBatch();
+
+            if (playerCount % batchSize == 0) {
+                playerStatement.executeBatch();
+            }
+        }
+        playerStatement.executeBatch();
+    }
+
+    private void insertTeams(int teamNumber, int batchSize) throws SQLException {
+        PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
+        int teamCount = 0;
+
+        List<String> teamNames = Arrays.asList("FRANCE", "GERMANY", "GREECE", "AUSTRIA", "FINLAND", "PORTUGAL", "SPAIN",
+                "SWEDEN", "SLOVAKIA", "LUXEMBOURG");
+
+        int teamNameIndex = 0;
+
+        for (int i = 1; i <= teamNumber; i++) {
+
+            teamStatement.setLong(1, i);
+            teamStatement.setString(2, "TEAM " + teamNames.get(teamNameIndex));
+
+            teamNameIndex++;
+
+            if (teamNameIndex > teamNames.size() - 1) {
+                teamNameIndex = 0;
+            }
+
+            teamStatement.addBatch();
+
+            teamCount++;
+            if (teamCount % batchSize == 0) {
+                teamStatement.executeBatch();
+            }
+        }
+        teamStatement.executeBatch();
+    }
+
+    //    @ExpectSelect()
+    @MeasureExecutionTime
     @Test
-    public void should_find_all_players_with_their_team_name() {
+    void should_find_all_players() {
+        String hql = "FROM Player";
 
-        final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
+        Query query = entityManager.createQuery(hql, Player.class);
 
-        final List<Player> players = fromPlayer.getResultList();
+        System.out.println(query.getResultList());
+    }
 
-        final List<PlayerWithTeamName> playersWithTeamName = players.stream()
-                .map(player -> new PlayerWithTeamName(player.getFirstName(), player.getLastName(),
-                        player.getTeam().getName()))
-                .collect(Collectors.toList());
+    //    @ExpectSelect()
+    @MeasureExecutionTime
+    @Test
+    void should_find_all_players_with_select_in() {
 
-        assertThat(playersWithTeamName).hasSize(2);
+        List<String> teamNames = Arrays.asList("FRANCE", "GERMANY");
+
+        String hql = "FROM Player WHERE team IN :teamNames";
+
+        Query query = entityManager.createQuery(hql, Player.class);
+        query.setParameter("team", teamNames);
+
+        System.out.println(query.getResultList());
+
+//        List<Player> resultList = query.getResultList();
+//
+//        System.out.println(resultList);
     }
 
     // -------------------------------------------------------------------------------------
 
     private EntityManager entityManager;
+
     {
         //db.
         final DataSource dataSource = aDataSource().build(db);
@@ -99,6 +167,9 @@ public class NplusOneSelect {
                 .buildProxy(dataSource);
 
         entityManager = anHibernateEntityManager(proxyDataSource);
-    }
 
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
+
+        connection = session.connection();
+    }
 }
