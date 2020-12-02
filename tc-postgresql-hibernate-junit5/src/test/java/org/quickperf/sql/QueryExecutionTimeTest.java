@@ -118,7 +118,6 @@ public class QueryExecutionTimeTest {
                 teamStatement.executeBatch();
             }
         }
-
         teamStatement.executeBatch();
     }
 
