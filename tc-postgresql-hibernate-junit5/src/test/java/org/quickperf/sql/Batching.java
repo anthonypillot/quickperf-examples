@@ -15,15 +15,10 @@ package org.quickperf.sql;
 
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.hibernate.internal.SessionImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.quickperf.annotation.ExpectMaxExecutionTime;
 import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
 import org.quickperf.jvm.annotations.MeasureHeapAllocation;
-import org.quickperf.jvm.jfr.annotation.ProfileJvm;
-import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
-import org.quickperf.sql.annotation.ExpectMaxQueryExecutionTime;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -52,13 +47,11 @@ public class Batching {
                     .withPassword("quick");
     private Connection connection;
 
-    @BeforeEach
-    public void before() throws SQLException {
-        insertTeams(100_000);
-        insertPlayers(100_000);
-    }
-
-    private void insertPlayers(int playerNumber) throws SQLException {
+    @MeasureExecutionTime
+    @MeasureHeapAllocation
+    //@ProfileJvm
+    @Test
+    void execute_insert_without_batching_one_insert() throws SQLException {
         PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
                 + "(?, ?, ?)");
 
@@ -68,7 +61,7 @@ public class Batching {
 
         int lastNameIndex = 0;
 
-        for (int i = 1; i <= playerNumber; i++) {
+        for (int i = 1; i <= 1; i++) {
             playerStatement.setLong(1, i);
             playerStatement.setString(2, "LAST NAME " + lastNames.get(lastNameIndex));
 
@@ -82,9 +75,7 @@ public class Batching {
 
             playerStatement.execute();
         }
-    }
 
-    private void insertTeams(int teamNumber) throws SQLException {
         PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
 
         List<String> teamNames = Arrays.asList("FRANCE", "GERMANY", "GREECE", "AUSTRIA", "FINLAND", "PORTUGAL", "SPAIN",
@@ -92,7 +83,7 @@ public class Batching {
 
         int teamNameIndex = 0;
 
-        for (int i = 1; i <= teamNumber; i++) {
+        for (int i = 1; i <= 1; i++) {
 
             teamStatement.setLong(1, i);
             teamStatement.setString(2, "TEAM " + teamNames.get(teamNameIndex));
@@ -106,54 +97,121 @@ public class Batching {
         }
     }
 
-
-    //@DisableLikeWithLeadingWildcard
     @MeasureExecutionTime
-    //@MeasureHeapAllocation
+    @MeasureHeapAllocation
     //@ProfileJvm
     @Test
     void execute_insert_without_batching() throws SQLException {
+        PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
+                + "(?, ?, ?)");
 
+        List<String> lastNames = Arrays.asList("POGBA", "GRIEZMANN", "GIROUD", "PAVARD", "MARTIAL", "KANTÉ", "MBAPPÉ",
+                "LLORIS", "RABIOT", "VARANE", "FEKIR", "DIGNE", "THAUVIN", "LEMAR", "TOLISSO", "HERNANDEZ", "COMAN",
+                "UPAMECANO", "MATUIDI", "AOUAR");
 
+        int lastNameIndex = 0;
+
+        for (int i = 1; i <= 10_000; i++) {
+            playerStatement.setLong(1, i);
+            playerStatement.setString(2, "LAST NAME " + lastNames.get(lastNameIndex));
+
+            lastNameIndex++;
+
+            if (lastNameIndex > lastNames.size() - 1) {
+                lastNameIndex = 0;
+            }
+
+            playerStatement.setString(3, "TEAM " + i);
+
+            playerStatement.execute();
+        }
+
+        PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
+
+        List<String> teamNames = Arrays.asList("FRANCE", "GERMANY", "GREECE", "AUSTRIA", "FINLAND", "PORTUGAL", "SPAIN",
+                "SWEDEN", "SLOVAKIA", "LUXEMBOURG");
+
+        int teamNameIndex = 0;
+
+        for (int i = 1; i <= 10_000; i++) {
+
+            teamStatement.setLong(1, i);
+            teamStatement.setString(2, "TEAM " + teamNames.get(teamNameIndex));
+
+            teamNameIndex++;
+
+            if (teamNameIndex > teamNames.size() - 1) {
+                teamNameIndex = 0;
+            }
+            teamStatement.execute();
+        }
     }
 
     @MeasureExecutionTime
-    //@MeasureHeapAllocation
+    @MeasureHeapAllocation
     //@ProfileJvm
     @Test
     void execute_insert_with_batching() throws SQLException {
+        PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
+                + "(?, ?, ?)");
 
+        int playerCount = 0;
 
+        List<String> lastNames = Arrays.asList("POGBA", "GRIEZMANN", "GIROUD", "PAVARD", "MARTIAL", "KANTÉ", "MBAPPÉ",
+                "LLORIS", "RABIOT", "VARANE", "FEKIR", "DIGNE", "THAUVIN", "LEMAR", "TOLISSO", "HERNANDEZ", "COMAN",
+                "UPAMECANO", "MATUIDI", "AOUAR");
+
+        int lastNameIndex = 0;
+
+        for (int i = 1; i <= 100_000; i++) {
+            playerCount++;
+            playerStatement.setLong(1, i);
+            playerStatement.setString(2, "LAST NAME " + lastNames.get(lastNameIndex));
+
+            lastNameIndex++;
+
+            if (lastNameIndex > lastNames.size() - 1) {
+                lastNameIndex = 0;
+            }
+
+            playerStatement.setString(3, "TEAM " + i);
+
+            playerStatement.addBatch();
+
+            if (playerCount % 50 == 0) {
+                playerStatement.executeBatch();
+            }
+        }
+        playerStatement.executeBatch();
+
+        PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
+        int teamCount = 0;
+
+        List<String> teamNames = Arrays.asList("FRANCE", "GERMANY", "GREECE", "AUSTRIA", "FINLAND", "PORTUGAL", "SPAIN",
+                "SWEDEN", "SLOVAKIA", "LUXEMBOURG");
+
+        int teamNameIndex = 0;
+
+        for (int i = 1; i <= 100_000; i++) {
+
+            teamStatement.setLong(1, i);
+            teamStatement.setString(2, "TEAM " + teamNames.get(teamNameIndex));
+
+            teamNameIndex++;
+
+            if (teamNameIndex > teamNames.size() - 1) {
+                teamNameIndex = 0;
+            }
+
+            teamStatement.addBatch();
+
+            teamCount++;
+            if (teamCount % 50 == 0) {
+                teamStatement.executeBatch();
+            }
+        }
+        teamStatement.executeBatch();
     }
-
-    @DisplaySqlOfTestMethodBody
-    @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
-    //@DisableLikeWithLeadingWildcard
-    @Test
-    void execute_long_query_with_like() throws SQLException {
-
-        String sqlQuery = "SELECT * FROM PLAYER WHERE firstName LIKE '%ANN'";
-
-        PreparedStatement statement = connection.prepareStatement(sqlQuery);
-        statement.execute();
-    }
-
-/*
-    @Test
-    public void should_find_all_players_with_their_team_name() {
-
-            final TypedQuery<Player> fromPlayer = entityManager.createQuery("FROM Player", Player.class);
-
-            final List<Player> players = fromPlayer.getResultList();
-
-            final List<PlayerWithTeamName> playersWithTeamName = players.stream()
-                            .map(player -> new PlayerWithTeamName(player.getFirstName(), player.getLastName(),
-                                            player.getTeam().getName()))
-                            .collect(Collectors.toList());
-
-            assertThat(playersWithTeamName).hasSize(2);
-    }
- */
 
     // -------------------------------------------------------------------------------------
 
@@ -174,8 +232,5 @@ public class Batching {
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
 
         connection = session.connection();
-
-
     }
-
 }
