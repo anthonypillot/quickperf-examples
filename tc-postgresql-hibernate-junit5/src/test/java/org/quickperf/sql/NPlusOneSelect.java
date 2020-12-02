@@ -34,7 +34,7 @@ public class NPlusOneSelect {
                     .withDatabaseName("testcontainers")
                     .withUsername("nes")
                     .withPassword("quick");
-    private Connection connection;
+    private final Connection connection;
 
     @BeforeEach
     public void before() throws SQLException {
@@ -119,7 +119,7 @@ public class NPlusOneSelect {
         teamStatement.executeBatch();
     }
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     {
         //db.

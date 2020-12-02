@@ -34,7 +34,7 @@ public class CompareSelectStatement {
                     .withDatabaseName("testcontainers")
                     .withUsername("nes")
                     .withPassword("quick");
-    private Connection connection;
+    private final Connection connection;
 
     @BeforeEach
     public void before() throws SQLException {
@@ -45,8 +45,8 @@ public class CompareSelectStatement {
         insertPlayers(100_000, batchSize);
     }
 
-    private int executionCount = 1000;
-    private String query = "SELECT * FROM Player WHERE id = 10";
+    private final int executionCount = 1000;
+    private final String query = "SELECT * FROM Player WHERE id = 10";
 
     @MeasureExecutionTime
     @MeasureHeapAllocation
@@ -141,7 +141,7 @@ public class CompareSelectStatement {
 
     // -------------------------------------------------------------------------------------
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     {
         //db.

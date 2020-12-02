@@ -46,7 +46,7 @@ public class QueryExecutionTimeTest {
                     .withDatabaseName("testcontainers")
                     .withUsername("nes")
                     .withPassword("quick");
-    private Connection connection;
+    private final Connection connection;
 
     @BeforeEach
     public void before() throws SQLException {
@@ -194,7 +194,8 @@ public class QueryExecutionTimeTest {
 
     // -------------------------------------------------------------------------------------
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
+
     {
         //db.
         final DataSource dataSource = aDataSource().build(db);

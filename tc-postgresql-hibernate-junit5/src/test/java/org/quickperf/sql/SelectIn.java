@@ -18,7 +18,6 @@ import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
 import org.quickperf.jvm.heap.HeapDumper;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
@@ -49,7 +48,7 @@ public class SelectIn {
                     .withDatabaseName("testcontainers")
                     .withUsername("nes")
                     .withPassword("quick");
-    private Connection connection;
+    private final Connection connection;
 
     @BeforeEach
     public void before() throws SQLException {
@@ -160,12 +159,11 @@ public class SelectIn {
 
         // Trigger Full GC and dump the heap
         HeapDumper.dumpHeap("large-in.hprof");
-
     }
 
     // -------------------------------------------------------------------------------------
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     {
         //db.

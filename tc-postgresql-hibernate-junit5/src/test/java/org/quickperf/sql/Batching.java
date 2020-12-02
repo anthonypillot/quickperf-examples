@@ -45,7 +45,7 @@ public class Batching {
                     .withDatabaseName("testcontainers")
                     .withUsername("nes")
                     .withPassword("quick");
-    private Connection connection;
+    private final Connection connection;
 
     @MeasureExecutionTime
     @MeasureHeapAllocation
@@ -185,7 +185,7 @@ public class Batching {
 
     // -------------------------------------------------------------------------------------
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     {
         //db.
