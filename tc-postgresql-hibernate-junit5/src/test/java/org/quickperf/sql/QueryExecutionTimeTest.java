@@ -18,8 +18,8 @@ import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.junit5.QuickPerfTest;
-import org.quickperf.jvm.jfr.annotation.ProfileJvm;
-import org.quickperf.sql.annotation.*;
+import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
+import org.quickperf.sql.annotation.ExpectMaxQueryExecutionTime;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -132,7 +132,6 @@ public class QueryExecutionTimeTest {
         for (int i = 0; i < 10; i++) {
             statement.execute();
         }
-
     }
 
     @DisplaySqlOfTestMethodBody
@@ -148,9 +147,7 @@ public class QueryExecutionTimeTest {
         for (int i = 0; i < 10; i++) {
             statement.execute();
         }
-
     }
-
 
     @DisplaySqlOfTestMethodBody
     @ExpectMaxQueryExecutionTime(thresholdInMilliSeconds = 20)
@@ -198,7 +195,6 @@ public class QueryExecutionTimeTest {
     // -------------------------------------------------------------------------------------
 
     private EntityManager entityManager;
-
     {
         //db.
         final DataSource dataSource = aDataSource().build(db);
@@ -214,8 +210,5 @@ public class QueryExecutionTimeTest {
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
 
         connection = session.connection();
-
-
     }
-
 }
