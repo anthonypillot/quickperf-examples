@@ -91,7 +91,7 @@ public class Batching {
                 lastNameIndex = 0;
             }
 
-            playerStatement.setString(3, "TEAM " + i);
+            playerStatement.setString(3, String.valueOf(i));
 
             playerStatement.execute();
         }
@@ -144,7 +144,7 @@ public class Batching {
                 lastNameIndex = 0;
             }
 
-            playerStatement.setString(3, "TEAM " + i);
+            playerStatement.setString(3, String.valueOf(i));
 
             playerStatement.addBatch();
 

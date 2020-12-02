@@ -83,7 +83,7 @@ public class SelectIn {
                 lastNameIndex = 0;
             }
 
-            playerStatement.setString(3, "TEAM " + i);
+            playerStatement.setString(3, String.valueOf(i));
 
             playerStatement.addBatch();
 

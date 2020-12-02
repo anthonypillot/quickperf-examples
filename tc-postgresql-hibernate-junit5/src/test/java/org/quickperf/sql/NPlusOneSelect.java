@@ -7,8 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
-import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
-import org.quickperf.sql.annotation.ExpectSelect;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -17,7 +15,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -81,7 +78,7 @@ public class NPlusOneSelect {
                 lastNameIndex = 0;
             }
 
-            playerStatement.setString(3, "TEAM " + i);
+            playerStatement.setString(3, String.valueOf(i));
 
             playerStatement.addBatch();
 
