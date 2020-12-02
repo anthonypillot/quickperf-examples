@@ -1,27 +1,11 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- *
- * Copyright 2020-2020 the original author or authors.
- */
-
 package org.quickperf.sql;
 
 import football.entity.Player;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.hibernate.internal.SessionImpl;
+import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
-import org.quickperf.jvm.annotations.MeasureHeapAllocation;
-import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -30,10 +14,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,7 +26,7 @@ import static org.quickperf.sql.config.TestDataSourceBuilder.aDataSource;
 
 @Testcontainers
 @QuickPerfTest
-public class SelectIn {
+public class NPlusOneSelect {
 
     @Container
     static final PostgreSQLContainer db =
@@ -59,6 +43,12 @@ public class SelectIn {
 
         insertTeams(1000, batchSize);
         insertPlayers(1000, batchSize);
+    }
+
+    @Test
+    void n_plus_one_select() {
+        String hql = "FROM Player";
+        Query query = entityManager.createQuery(hql, Player.class);
     }
 
     private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
@@ -125,51 +115,6 @@ public class SelectIn {
         teamStatement.executeBatch();
     }
 
-    // Testing Scope
-    @MeasureExecutionTime
-    @Test
-    void should_find_all_players() {
-        String hql = "FROM Player";
-
-        Query query = entityManager.createQuery(hql, Player.class);
-    }
-
-    @MeasureExecutionTime
-    @MeasureHeapAllocation
-    @DisplaySqlOfTestMethodBody
-    @Test
-    void should_find_all_players_with_select_in() {
-
-        List<String> teamNamesList = Arrays.asList("FRANCE", "GERMANY");
-
-        String hql = "FROM Player p WHERE p.team.name IN (:teamNames)";
-
-        Query query = entityManager.createQuery(hql, Player.class);
-        query.setParameter("teamNames", teamNamesList);
-    }
-
-    @MeasureExecutionTime
-    @MeasureHeapAllocation
-    @DisplaySqlOfTestMethodBody
-    @Test
-    void should_find_all_players_with_select_large_in() {
-
-        List<Long> idsList = new ArrayList<>();
-
-        for (long i = 0; i < 100_000; i++) {
-            idsList.add(i);
-        }
-
-        String parameter = "playerIds";
-
-        String hql = "FROM Player WHERE id in (:" + parameter + ")";
-
-        Query query = entityManager.createQuery(hql, Player.class);
-        query.setParameter(parameter, idsList);
-    }
-
-    // -------------------------------------------------------------------------------------
-
     private EntityManager entityManager;
 
     {
@@ -188,4 +133,5 @@ public class SelectIn {
 
         connection = session.connection();
     }
+
 }
