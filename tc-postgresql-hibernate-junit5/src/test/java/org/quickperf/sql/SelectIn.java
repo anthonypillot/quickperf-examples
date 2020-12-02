@@ -20,8 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.junit5.QuickPerfTest;
-import org.quickperf.jvm.annotations.MeasureHeapAllocation;
-import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
+import org.quickperf.jvm.heap.HeapDumper;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -132,11 +131,9 @@ public class SelectIn {
         String hql = "FROM Player";
 
         Query query = entityManager.createQuery(hql, Player.class);
+        query.getResultList();
     }
 
-    @MeasureExecutionTime
-    @MeasureHeapAllocation
-    @DisplaySqlOfTestMethodBody
     @Test
     void should_find_all_players_with_select_in() {
 
@@ -146,11 +143,13 @@ public class SelectIn {
 
         Query query = entityManager.createQuery(hql, Player.class);
         query.setParameter("teamNames", teamNamesList);
+
+        query.getResultList();
+
+        // Trigger Full GC and dump the heap
+        HeapDumper.dumpHeap("large-in.hprof");
     }
 
-    @MeasureExecutionTime
-    @MeasureHeapAllocation
-    @DisplaySqlOfTestMethodBody
     @Test
     void should_find_all_players_with_select_large_in() {
 
@@ -166,6 +165,12 @@ public class SelectIn {
 
         Query query = entityManager.createQuery(hql, Player.class);
         query.setParameter(parameter, idsList);
+
+        query.getResultList();
+
+        // Trigger Full GC and dump the heap
+        HeapDumper.dumpHeap("large-in.hprof");
+
     }
 
     // -------------------------------------------------------------------------------------
