@@ -1,4 +1,2 @@
---INSERT INTO Team VALUES (1, 'Manchester United');
---INSERT INTO Team VALUES (2, 'Atlético de Madrid');
---INSERT INTO Player VALUES (1, 'Paul', 'Pogba', 1);
---INSERT INTO Player VALUES (2, 'Antoine', 'Griezmann', 2);
+CREATE UNIQUE INDEX index_team_id ON team (id);
+CREATE INDEX index_player_team ON player (team_id);
