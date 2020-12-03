@@ -45,7 +45,7 @@ public class NPlusOneSelect {
         insertPlayers(1000, batchSize);
     }
 
-    private void insertPlayers(int playerNumber, List<Long> idsTeamList, int batchSize) throws SQLException {
+    private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
         PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
                 + "(?, ?, ?, ?)");
 
@@ -75,16 +75,12 @@ public class NPlusOneSelect {
             firstNameIndex++;
             idsTeamListIndex++;
 
-            if (lastNameIndex > lastNamesList.size()) {
+            if (lastNameIndex > lastNamesList.size() - 1) {
                 lastNameIndex = 0;
             }
 
-            if (firstNameIndex > firstNamesList.size()) {
+            if (firstNameIndex > firstNamesList.size() - 1) {
                 firstNameIndex = 0;
-            }
-
-            if (idsTeamListIndex > idsTeamList.size()) {
-                idsTeamListIndex = 0;
             }
 
             playerStatement.addBatch();
