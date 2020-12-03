@@ -45,40 +45,47 @@ public class NPlusOneSelect {
         insertPlayers(1000, batchSize);
     }
 
-    @Test
-    @MeasureExecutionTime
-    //@ExpectSelect(1)
-    //@DisplaySqlOfTestMethodBody
-    public void n_plus_one_select() {
-        String hql = "FROM Player";
-        Query query = entityManager.createQuery(hql, Player.class);
-        query.getResultList();
-    }
-
-    private void insertPlayers(int playerNumber, int batchSize) throws SQLException {
+    private void insertPlayers(int playerNumber, List<Long> idsTeamList, int batchSize) throws SQLException {
         PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
-                + "(?, ?, ?)");
+                + "(?, ?, ?, ?)");
 
         int playerCount = 0;
 
-        List<String> lastNames = Arrays.asList("POGBA", "GRIEZMANN", "GIROUD", "PAVARD", "MARTIAL", "KANTÉ", "MBAPPÉ",
+        List<String> lastNamesList = Arrays.asList("POGBA", "GRIEZMANN", "GIROUD", "PAVARD", "MARTIAL", "KANTÉ", "MBAPPÉ",
                 "LLORIS", "RABIOT", "VARANE", "FEKIR", "DIGNE", "THAUVIN", "LEMAR", "TOLISSO", "HERNANDEZ", "COMAN",
                 "UPAMECANO", "MATUIDI", "AOUAR");
 
-        int lastNameIndex = 0;
+        List<String> firstNamesList = Arrays.asList("PAUL", "ANTOINE", "OLIVIER", "BENJAMIN", "ANTHONY", "NGOLO", "KYLIAN",
+                "HUGO", "ADRIEN", "RAPHAEL", "NABIL", "LUCAS", "FLORIAN", "THOMAS", "CORENTIN", "LUCAS", "KINGSLEY",
+                "DAYOT", "BLAISE", "HOUSSEM");
 
-        for (int i = 1; i <= playerNumber; i++) {
+        int lastNameIndex = 0;
+        int firstNameIndex = 0;
+        int idsTeamListIndex = 0;
+
+        for (int i = 0; i <= playerNumber; i++) {
             playerCount++;
+
             playerStatement.setLong(1, i);
-            playerStatement.setString(2, "LAST NAME " + lastNames.get(lastNameIndex));
+            playerStatement.setString(2, "LAST NAME " + lastNamesList.get(lastNameIndex));
+            playerStatement.setString(3, "FIRST NAME " + firstNamesList.get(firstNameIndex));
+            playerStatement.setLong(4, 5);
 
             lastNameIndex++;
+            firstNameIndex++;
+            idsTeamListIndex++;
 
-            if (lastNameIndex > lastNames.size() - 1) {
+            if (lastNameIndex > lastNamesList.size()) {
                 lastNameIndex = 0;
             }
 
-            playerStatement.setString(3, String.valueOf(i));
+            if (firstNameIndex > firstNamesList.size()) {
+                firstNameIndex = 0;
+            }
+
+            if (idsTeamListIndex > idsTeamList.size()) {
+                idsTeamListIndex = 0;
+            }
 
             playerStatement.addBatch();
 
@@ -117,6 +124,16 @@ public class NPlusOneSelect {
             }
         }
         teamStatement.executeBatch();
+    }
+
+    @Test
+    @MeasureExecutionTime
+    //@ExpectSelect(1)
+    //@DisplaySqlOfTestMethodBody
+    public void n_plus_one_select() {
+        String hql = "FROM Player";
+        Query query = entityManager.createQuery(hql, Player.class);
+        query.getResultList();
     }
 
     private final EntityManager entityManager;
