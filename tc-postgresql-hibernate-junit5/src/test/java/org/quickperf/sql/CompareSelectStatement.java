@@ -22,6 +22,7 @@ public class CompareSelectStatement extends PostgreSqlTest {
     }
 
     private final int executionCount = 1000;
+
     @MeasureExecutionTime
     @MeasureHeapAllocation
     @Test

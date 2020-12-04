@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectFind extends PostgreSqlTest{
+public class SelectFind extends PostgreSqlTest {
 
     int playerNumber = 1000;
 

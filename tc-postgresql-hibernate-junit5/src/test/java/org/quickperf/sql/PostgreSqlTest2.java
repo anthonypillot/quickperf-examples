@@ -6,7 +6,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.quickperf.junit5.QuickPerfTest;
 import org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.persistence.EntityManager;

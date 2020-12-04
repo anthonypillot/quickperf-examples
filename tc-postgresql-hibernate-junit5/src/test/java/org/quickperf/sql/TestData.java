@@ -10,7 +10,8 @@ import java.util.List;
 
 public class TestData {
 
-    private TestData() { }
+    private TestData() {
+    }
 
     public static List<Long> insertTeams(Connection connection, int teamNumber, int batchSize) throws SQLException {
         PreparedStatement teamStatement = connection.prepareStatement("INSERT INTO TEAM VALUES (" + "?" + ",?)");
@@ -71,7 +72,7 @@ public class TestData {
         for (int i = 0; i <= playerNumber; i++) {
 
 
-            if(teamIdStack.isEmpty()) {
+            if (teamIdStack.isEmpty()) {
                 teamIdStack = new ArrayDeque<>(idsTeamList);
             }
 
