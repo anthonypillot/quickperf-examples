@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class JoinWithIndex extends PostgreSqlTest2 {
+public class JoinWithoutIndex extends PostgreSqlTest2 {
 
     /**
      * Number of the SELECT PreparedStatement execution
@@ -19,12 +19,12 @@ public class JoinWithIndex extends PostgreSqlTest2 {
     @BeforeAll
     public static void before() throws SQLException {
 
-        System.out.println("JoinWithIndex.before");
+        System.out.println("JoinWithoutIndex.before");
 
-        PreparedStatement preparedStatement = connection.prepareStatement("CREATE UNIQUE INDEX index_team_id ON team (id);");
+        PreparedStatement preparedStatement = connection.prepareStatement("DROP INDEX IF EXISTS index_team_id");
         preparedStatement.execute();
 
-        preparedStatement = connection.prepareStatement("CREATE INDEX index_player_team ON player (team_id);");
+        preparedStatement = connection.prepareStatement("DROP INDEX IF EXISTS index_player_team");
         preparedStatement.execute();
 
         int batchSize = 50;
@@ -42,7 +42,7 @@ public class JoinWithIndex extends PostgreSqlTest2 {
                 "SELECT p1_0.id, p1_0.firstName," +
                 "p1_0.lastName, t1_0.id, t1_0.name FROM Player AS p1_0 LEFT OUTER JOIN Team AS t1_0 ON p1_0.team_id = t1_0.id");
 
-        /** Print the response from the PostgreSQL database **/
+        /** Print the EXPLAIN ANALYZE response from the PostgreSQL database **/
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             System.out.println(resultSet.getString(1));
@@ -51,7 +51,7 @@ public class JoinWithIndex extends PostgreSqlTest2 {
 
     @Test
     @MeasureExecutionTime
-    public void sql_query_with_index() throws SQLException {
+    public void sql_query_without_index() throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT p1_0.id, p1_0.firstName, p1_0.lastName, t1_0.id, t1_0.name" +
                 " FROM Player AS p1_0 LEFT OUTER JOIN Team AS t1_0 ON p1_0.team_id = t1_0.id");
         preparedStatement.execute();
@@ -59,7 +59,7 @@ public class JoinWithIndex extends PostgreSqlTest2 {
 
     @Test
     @MeasureExecutionTime
-    public void several_sql_query_with_index() throws SQLException {
+    public void several_sql_query_without_index() throws SQLException {
 
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT p1_0.id, p1_0.firstName, p1_0.lastName, t1_0.id, t1_0.name" +
                 " FROM Player AS p1_0 LEFT OUTER JOIN Team AS t1_0 ON p1_0.team_id = t1_0.id");
