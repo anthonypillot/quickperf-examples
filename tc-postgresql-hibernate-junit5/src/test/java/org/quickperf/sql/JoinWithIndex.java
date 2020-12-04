@@ -33,6 +33,23 @@ public class JoinWithIndex extends PostgreSqlTest2 {
     }
 
     /**
+     * Testing scope: to see how EXPLAIN ANALYZE is working
+     **/
+    @Test
+    @MeasureExecutionTime
+    public void sql_query_explain_analyse_without_join() throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("EXPLAIN (ANALYZE true , VERBOSE true , BUFFERS true)" +
+                "SELECT * FROM Player WHERE id = ?");
+
+        preparedStatement.setLong(1, 1);
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()) {
+            System.out.println(resultSet.getString(1));
+        }
+    }
+
+    /**
      * Use EXPLAIN ANALYZE from Postgres to verify that the index isn't created
      **/
     @Test
