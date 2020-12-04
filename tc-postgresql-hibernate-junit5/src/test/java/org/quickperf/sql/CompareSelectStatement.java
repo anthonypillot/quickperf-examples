@@ -17,8 +17,8 @@ public class CompareSelectStatement extends PostgreSqlTest {
 
         int batchSize = 50;
 
-        List<Long> idsTeamList = insertTeams(100_000, batchSize);
-        insertPlayers(100_000, idsTeamList, batchSize);
+        List<Long> idsTeamList = TestData.insertTeams(connection, 100_000, batchSize);
+        TestData.insertPlayers(connection, 100_000, idsTeamList, batchSize);
     }
 
     private final int executionCount = 1000;

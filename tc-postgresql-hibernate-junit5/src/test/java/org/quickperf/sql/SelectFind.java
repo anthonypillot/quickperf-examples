@@ -21,7 +21,6 @@ import org.quickperf.annotation.MeasureExecutionTime;
 import javax.persistence.TypedQuery;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class SelectFind extends PostgreSqlTest{
@@ -31,8 +30,8 @@ public class SelectFind extends PostgreSqlTest{
     @BeforeEach
     public void before() throws SQLException {
         int batchSize = 25;
-        List<Long> teamIds = insertTeams(10, batchSize);
-        insertPlayers(playerNumber, teamIds, batchSize);
+        List<Long> teamIds = TestData.insertTeams(connection, 10, batchSize);
+        TestData.insertPlayers(connection, playerNumber, teamIds, batchSize);
     }
 
     @MeasureExecutionTime

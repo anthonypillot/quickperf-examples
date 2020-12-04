@@ -30,8 +30,8 @@ public class SelectIn extends PostgreSqlTest {
 
         int batchSize = 50;
 
-        List<Long> idsTeamList = insertTeams(1000, batchSize);
-        insertPlayers(1000, idsTeamList, batchSize);
+        List<Long> idsTeamList = TestData.insertTeams(connection, 1000, batchSize);
+        TestData.insertPlayers(connection, 1000, idsTeamList, batchSize);
     }
 
     @Test

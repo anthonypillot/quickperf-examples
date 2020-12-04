@@ -17,8 +17,8 @@ public class JoinWithIndex extends PostgreSqlTest {
 
         int batchSize = 50;
 
-        List<Long> idsTeamList = insertTeams(10_000, batchSize);
-        insertPlayers(100, idsTeamList, batchSize);
+        List<Long> idsTeamList = TestData.insertTeams(connection, 10_000, batchSize);
+        TestData.insertPlayers(connection, 100, idsTeamList, batchSize);
     }
 
     @Test
