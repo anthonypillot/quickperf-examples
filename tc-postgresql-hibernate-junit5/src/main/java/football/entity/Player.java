@@ -22,13 +22,17 @@ public class Player implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(name = "firstname")
     private String firstName;
 
+    @Column(name = "lastname")
     private String lastName;
 
-    private String birthday;
+    @Column(name = "birthday")
+    private int birthday;
 
-    private String clubEntryDate;
+    @Column(name = "clubentrydate")
+    private int clubEntryDate;
 
     @ManyToOne(targetEntity = Team.class)
     @JoinColumn(name = "team_id")
@@ -66,19 +70,19 @@ public class Player implements Serializable {
         this.team = team;
     }
 
-    public String getBirthday() {
+    public int getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(String birthday) {
+    public void setBirthday(int birthday) {
         this.birthday = birthday;
     }
 
-    public String getClubEntryDate() {
+    public int getClubEntryDate() {
         return clubEntryDate;
     }
 
-    public void setClubEntryDate(String clubEntryDate) {
+    public void setClubEntryDate(int clubEntryDate) {
         this.clubEntryDate = clubEntryDate;
     }
 
@@ -88,8 +92,8 @@ public class Player implements Serializable {
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", birthday='" + birthday + '\'' +
-                ", clubEntryDate='" + clubEntryDate + '\'' +
+                ", birthday=" + birthday +
+                ", clubEntryDate=" + clubEntryDate +
                 ", team=" + team +
                 '}';
     }

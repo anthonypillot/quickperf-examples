@@ -49,7 +49,7 @@ public class TestData {
     }
 
     public static void insertPlayers(Connection connection, int playerNumber, List<Long> idsTeamList, int batchSize) throws SQLException {
-        PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
+        PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER (id, firstname, lastname, birthday, clubentrydate, team_id) VALUES"
                 + "(?, ?, ?, ?, ?, ?)");
 
         int playerCount = 0;
