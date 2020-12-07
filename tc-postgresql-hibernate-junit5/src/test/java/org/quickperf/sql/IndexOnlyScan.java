@@ -6,6 +6,7 @@ import org.quickperf.annotation.MeasureExecutionTime;
 import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -45,5 +46,29 @@ public class IndexOnlyScan extends PostgreSqlTest2 {
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT player.birthday , player.clubentrydate" +
                 " FROM PLAYER WHERE birthday = 2000 AND clubentrydate = 2018");
         preparedStatement.execute();
+    }
+
+    @Test
+    public void select_with_star_explain() throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("EXPLAIN ANALYZE SELECT *" +
+                " FROM PLAYER WHERE birthday = 2000 AND clubentrydate = 2018");
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        while (resultSet.next()) {
+            System.out.println(resultSet.getString(1));
+        }
+    }
+
+    @Test
+    public void select_with_specific_column_explain() throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("EXPLAIN ANALYZE SELECT player.birthday , player.clubentrydate" +
+                " FROM PLAYER WHERE birthday = 2000 AND clubentrydate = 2018");
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        while (resultSet.next()) {
+            System.out.println(resultSet.getString(1));
+        }
     }
 }
