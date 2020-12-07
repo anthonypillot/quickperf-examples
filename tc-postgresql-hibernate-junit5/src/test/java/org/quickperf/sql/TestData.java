@@ -62,8 +62,16 @@ public class TestData {
                 "HUGO", "ADRIEN", "RAPHAEL", "NABIL", "LUCAS", "FLORIAN", "THOMAS", "CORENTIN", "LUCAS", "KINGSLEY",
                 "DAYOT", "BLAISE", "HOUSSEM");
 
+        List<Integer> birthDayList = Arrays.asList(1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991,
+                1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003);
+
+        List<Integer> clubEntryDateList = Arrays.asList(1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+                2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020);
+
         int lastNameIndex = 0;
         int firstNameIndex = 0;
+        int birthDayIndex = 0;
+        int clubEntryDateIndex = 0;
         int idsTeamListIndex = 0;
 
         ArrayDeque<Long> teamIdStack = new ArrayDeque<>(idsTeamList);
@@ -79,21 +87,31 @@ public class TestData {
 
             idsTeamListIndex++;
             playerStatement.setLong(1, i);
-            playerStatement.setString(2, "LAST NAME " + i);
-            playerStatement.setString(3, "FIRST NAME " + i);
-            playerStatement.setInt(4, 1990);
-            playerStatement.setInt(5, 1995);
+            playerStatement.setString(2, "LAST NAME " + lastNamesList.get(lastNameIndex));
+            playerStatement.setString(3, "FIRST NAME " + firstNamesList.get(firstNameIndex));
+            playerStatement.setInt(4, birthDayList.get(birthDayIndex));
+            playerStatement.setInt(5, clubEntryDateList.get(clubEntryDateIndex));
             playerStatement.setLong(6, teamId);
 
             lastNameIndex++;
             firstNameIndex++;
+            birthDayIndex++;
+            clubEntryDateIndex++;
 
-            if (lastNameIndex > lastNamesList.size()) {
+            if (lastNameIndex > lastNamesList.size() - 1) {
                 lastNameIndex = 0;
             }
 
-            if (firstNameIndex > firstNamesList.size()) {
+            if (firstNameIndex > firstNamesList.size() - 1) {
                 firstNameIndex = 0;
+            }
+
+            if (birthDayIndex > birthDayList.size() - 1) {
+                birthDayIndex = 0;
+            }
+
+            if (clubEntryDateIndex > clubEntryDateList.size() - 1) {
+                clubEntryDateIndex = 0;
             }
 
             if (idsTeamListIndex > idsTeamList.size()) {

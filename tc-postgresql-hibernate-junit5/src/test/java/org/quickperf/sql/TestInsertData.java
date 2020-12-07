@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Testing scope: intended to verify if datas are correctly inserted.
+ * Testing scope: intended to verify if data are correctly inserted.
  */
 public class TestInsertData extends PostgreSqlTest2 {
 
@@ -21,6 +21,11 @@ public class TestInsertData extends PostgreSqlTest2 {
         TestData.insertPlayers(connection, 100_000, idsTeamList, batchSize);
     }
 
+
+    /**
+     * Print in the console the result of the test, which is the data from a SELECT * FROM PLAYER.
+     * @throws SQLException if the SELECT can not retrieve information from db.
+     */
     @Test
     public void testingDataWithSelect() throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM PLAYER");
