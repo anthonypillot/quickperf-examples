@@ -26,6 +26,10 @@ public class Player implements Serializable {
 
     private String lastName;
 
+    private Integer birthDay;
+
+    private Integer clubEntryDate;
+
     @ManyToOne(targetEntity = Team.class)
     @JoinColumn(name = "team_id")
     private Team team;
@@ -62,12 +66,30 @@ public class Player implements Serializable {
         this.team = team;
     }
 
+    public int getBirthDay() {
+        return birthDay;
+    }
+
+    public void setBirthDay(int birthDay) {
+        this.birthDay = birthDay;
+    }
+
+    public Integer getClubEntryDate() {
+        return clubEntryDate;
+    }
+
+    public void setClubEntryDate(Integer clubEntryDate) {
+        this.clubEntryDate = clubEntryDate;
+    }
+
     @Override
     public String toString() {
         return "Player{" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
+                ", birthDay='" + birthDay + '\'' +
+                ", clubEntryDate='" + clubEntryDate + '\'' +
                 ", team=" + team +
                 '}';
     }
