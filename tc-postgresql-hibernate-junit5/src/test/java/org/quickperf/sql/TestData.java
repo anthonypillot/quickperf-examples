@@ -50,7 +50,7 @@ public class TestData {
 
     public static void insertPlayers(Connection connection, int playerNumber, List<Long> idsTeamList, int batchSize) throws SQLException {
         PreparedStatement playerStatement = connection.prepareStatement("INSERT INTO PLAYER VALUES"
-                + "(?, ?, ?, ?)");
+                + "(?, ?, ?, ?, ?, ?)");
 
         int playerCount = 0;
 
@@ -68,10 +68,7 @@ public class TestData {
 
         ArrayDeque<Long> teamIdStack = new ArrayDeque<>(idsTeamList);
 
-
         for (int i = 0; i <= playerNumber; i++) {
-
-
             if (teamIdStack.isEmpty()) {
                 teamIdStack = new ArrayDeque<>(idsTeamList);
             }
@@ -84,11 +81,9 @@ public class TestData {
             playerStatement.setLong(1, i);
             playerStatement.setString(2, "LAST NAME " + i);
             playerStatement.setString(3, "FIRST NAME " + i);
-            playerStatement.setLong(4, teamId);
-            //playerStatement.setString(2, "LAST NAME " + lastNamesList.get(lastNameIndex));
-            // playerStatement.setString(3, "FIRST NAME " + firstNamesList.get(firstNameIndex));
-            //Long teamId = idsTeamList.get(idsTeamListIndex - 1);
-            //playerStatement.setLong(4, teamId);
+            playerStatement.setInt(4, 1990);
+            playerStatement.setInt(5, 1995);
+            playerStatement.setLong(6, teamId);
 
             lastNameIndex++;
             firstNameIndex++;
@@ -113,5 +108,4 @@ public class TestData {
         }
         playerStatement.executeBatch();
     }
-
 }
