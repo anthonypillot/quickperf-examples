@@ -19,15 +19,21 @@ public class IndexOnlyScan extends PostgreSqlTest2 {
         List<Long> idsTeamList = TestData.insertTeams(connection, 100_000, batchSize);
         TestData.insertPlayers(connection, 100_000, idsTeamList, batchSize);
 
+        update_id();
         create_index();
     }
 
     private static void create_index() throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("CREATE INDEX index_birthday ON player (birthday)");
+        PreparedStatement preparedStatement = connection.prepareStatement("CREATE INDEX index_birthday ON player (birthday, clubentrydate)");
         preparedStatement.execute();
 
-        preparedStatement = connection.prepareStatement("CREATE INDEX index_clubentrydate ON player (clubentrydate);");
-        preparedStatement.execute();
+//        preparedStatement = connection.prepareStatement("CREATE INDEX index_clubentrydate ON player (clubentrydate);");
+//        preparedStatement.execute();
+    }
+
+    public static void update_id() throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE PLAYER SET id = '150000' WHERE id = '95000'");
+        preparedStatement.executeUpdate();
     }
 
     @DisplaySqlOfTestMethodBody
@@ -51,7 +57,7 @@ public class IndexOnlyScan extends PostgreSqlTest2 {
     @Test
     public void select_with_star_explain() throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("EXPLAIN ANALYZE SELECT *" +
-                " FROM PLAYER WHERE birthday = 2000 AND clubentrydate = 2018");
+                " FROM PLAYER WHERE birthday = 2000");
 
         ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -63,7 +69,7 @@ public class IndexOnlyScan extends PostgreSqlTest2 {
     @Test
     public void select_with_specific_column_explain() throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("EXPLAIN ANALYZE SELECT player.birthday , player.clubentrydate" +
-                " FROM PLAYER WHERE birthday = 2000 AND clubentrydate = 2018");
+                " FROM PLAYER WHERE birthday = 2000");
 
         ResultSet resultSet = preparedStatement.executeQuery();
 

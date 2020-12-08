@@ -2,8 +2,6 @@ package org.quickperf.sql;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.quickperf.annotation.MeasureExecutionTime;
-import org.quickperf.sql.annotation.DisplaySqlOfTestMethodBody;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -17,13 +15,12 @@ public class IndexSelectFrom extends PostgreSqlTest2 {
 
         List<Long> idsTeamList = TestData.insertTeams(connection, 100_000, batchSize);
         TestData.insertPlayers(connection, 100_000, idsTeamList, batchSize);
+
+        update_id();
     }
 
-    @Test
-    @MeasureExecutionTime
-    @DisplaySqlOfTestMethodBody
-    public void update_id() throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE PLAYER SET id = '150000' WHERE id = '85000'");
+    public static void update_id() throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE PLAYER SET id = '150000' WHERE id = '95000'");
         preparedStatement.executeUpdate();
     }
 
